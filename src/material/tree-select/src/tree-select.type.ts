@@ -1,38 +1,33 @@
 import { Component, ViewChild } from '@angular/core';
 import { FieldType } from '@ngx-formly/material/form-field';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatTree } from '@angular/material/tree';
+import { MatInput } from '@angular/material/input';
 
 @Component({
   selector: 'formly-field-mat-tree-select',
   template: `
-    <mat-checkbox
-      [formControl]="formControl"
+    <select matNativeControl
       [id]="id"
-      [formlyAttributes]="field"
-      [tabindex]="to.tabindex || 0"
-      [indeterminate]="to.indeterminate && formControl.value === null"
-      [color]="to.color"
-      [labelPosition]="to.align || to.labelPosition">
-      {{ to.label }}
-      <span *ngIf="to.required && to.hideRequiredMarker !== true" class="mat-form-field-required-marker">*</span>
-    </mat-checkbox>
+      [readonly]="to.readonly"
+      [errorStateMatcher]="errorStateMatcher"
+      [formControl]="formControl"
+      [formlyAttributes]="field">
+      <option *ngIf="to.placeholder" [ngValue]="null">{{ to.placeholder }}</option>
+      <ng-container *ngFor="let item of to.options | formlySelectOptions:field | async">
+        <optgroup *ngIf="item.group" label="{{item.label}}">
+          <option *ngFor="let child of item.group" [ngValue]="child.value" [disabled]="child.disabled">
+            {{ child.label }}
+          </option>
+        </optgroup>
+        <option *ngIf="!item.group" [ngValue]="item.value" [disabled]="item.disabled">{{ item.label }}</option>
+      </ng-container>
+    </select>
   `,
 })
 export class FormlyFieldTreeSelect extends FieldType {
-  @ViewChild(MatCheckbox) checkbox!: MatCheckbox;
+  @ViewChild(MatInput, <any> { static: true }) formFieldControl!: MatInput;
   defaultOptions = {
     templateOptions: {
-      hideFieldUnderline: true,
-      indeterminate: true,
-      floatLabel: 'always',
-      hideLabel: true,
-      align: 'start', // start or end
+      options: [],
     },
   };
-
-  onContainerClick(event: MouseEvent): void {
-    this.checkbox.focus();
-    super.onContainerClick(event);
-  }
 }
