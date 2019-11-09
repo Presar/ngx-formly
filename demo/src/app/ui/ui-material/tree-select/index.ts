@@ -1,9 +1,9 @@
-import { AppModule as NativeSelectAppModule } from './app.module';
-import { AppComponent as NativeSelectAppComponent } from './app.component';
+import { AppModule as TreeSelectAppModule } from './app.module';
+import { AppComponent as TreeSelectAppComponent } from './app.component';
 
-const NativeSelectExampleConfig = {
-  title: 'NativeSelect type',
-  component: NativeSelectAppComponent,
+const TreeSelectExampleConfig = {
+  title: 'TreeSelect type',
+  component: TreeSelectAppComponent,
   debug: true,
   files: [
     { file: 'app.component.html', content: require('!!highlight-loader?raw=true&lang=html!./app.component.html'), filecontent: require('!!raw-loader!./app.component.html') },
@@ -13,7 +13,7 @@ const NativeSelectExampleConfig = {
 };
 
 export {
-  NativeSelectAppModule,
-  NativeSelectAppComponent,
-  NativeSelectExampleConfig,
+  TreeSelectAppModule,
+  TreeSelectAppComponent,
+  TreeSelectExampleConfig,
 };
