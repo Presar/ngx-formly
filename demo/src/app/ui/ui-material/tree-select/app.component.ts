@@ -8,23 +8,31 @@ import { FormlyFormOptions, FormlyFieldConfig } from '@ngx-formly/core';
 })
 export class AppComponent {
   form = new FormGroup({});
-  model: any = {};
+  model: any = {'Permissions': {
+    'user': ['manage'],
+    'company': ['manage']
+  }};
   options: FormlyFormOptions = {};
   fields: FormlyFieldConfig[] = [
     {
-      key: 'TreeSelect',
+      key: 'Permissions',
       type: 'tree-select',
       templateOptions: {
-        label: 'Tree select',
+        label: 'Group Permissions',
         placeholder: 'Placeholder',
         description: 'Description',
-        required: true,
-        options: [
-          { value: 1, label: 'Option 1' },
-          { value: 2, label: 'Option 2' },
-          { value: 3, label: 'Option 3' },
-          { value: 4, label: 'Option 4' },
-        ],
+        options: [{
+          'user': ['manage', 'group'],
+          'company': ['manage', 'list'],
+          'project': {
+            'manage': [],
+            'schedule': ['manage', 'print']
+          },
+          'salary': {
+            'change': ['increase', 'decrease'],
+            'access': ['read', 'print']
+          }
+        }],
       },
     },
   ];

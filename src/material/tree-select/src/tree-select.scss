@@ -1,0 +1,21 @@
+.tree-select-tree.mat-tree {
+  background: inherit;
+  ::ng-deep {
+    .mat-tree-node {
+      min-height: auto;
+      height: 28px;
+    }
+  }
+  &.readonly {
+    ::ng-deep {
+      .mat-tree-node {
+        height: 25px;
+      }
+    }
+  }
+  ul {
+    margin: 5px;
+    padding: 0 2em;
+  }
+}
+  
