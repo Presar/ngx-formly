@@ -1,32 +1,38 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewChecked } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { FormlyFormOptions, FormlyFieldConfig } from '@ngx-formly/core';
-import { FormlyTreeNodeData } from 'src/material/tree-select';
+import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
+import { FormlyTreeNodeData } from '@ngx-formly/material/tree-select';
 import { of } from 'rxjs';
 
 @Component({
   selector: 'formly-app-example',
   templateUrl: './app.component.html',
 })
-export class AppComponent {
-  getModelString() {
-    return JSON.stringify(this.model);
+export class AppComponent implements AfterViewChecked {
+  modelValue;
+
+  ngAfterViewChecked() {
+    setTimeout(() => {
+      this.modelValue = JSON.stringify(this.model);
+    });
   }
 
   form = new FormGroup({});
-  // model is the nodes selected till the leaves
+  // model is the nodes selected till the leaves. The key 'TreeSelect' is defined in the fields
   model: FormlyTreeNodeData = {
-    Groceries: {
-      'Almond Meal flour': null,
-      Fruits: {
-        Apple: null,
-        Berries: ['Blueberry']
-      }
-    },
-    Reminders: [
-      'Cook dinner'
-    ]
-  };
+    'TreeSelect': {
+      Groceries: {
+        'Almond Meal flour': null,
+        Fruits: {
+          Apple: null,
+          Berries: ['Blueberry']
+        }
+      },
+      Reminders: [
+        'Cook dinner'
+      ]
+    }
+  };  
   treeOption: FormlyTreeNodeData = {
     Groceries: {
       'Almond Meal flour': null,
@@ -52,10 +58,10 @@ export class AppComponent {
       templateOptions: {
         label: 'Tree Select',
         placeholder: 'Placeholder',
-        description: 'Description',        
+        description: "Description",        
         // options can be of([this.treeOption]) or [this.treeOption]
         options: of([this.treeOption]),
-      },
+      }
     },
   ];
 }
