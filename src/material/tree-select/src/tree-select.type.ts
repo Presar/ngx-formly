@@ -16,7 +16,7 @@ class FormlyTreeNode {
   path: string;
   children: FormlyTreeNode[];
   parent: FormlyTreeNode;
-  selected: boolean;
+  selectedLeaf: boolean;
 
   constructor(item: string, parent: FormlyTreeNode) {
     this.item = item;
@@ -38,9 +38,10 @@ class FormlyTreeNode {
 /** Flat item node with expandable and level information */
 class FormlyTreeFlatNode {
   item: string;
+  path: string;
   level: number;
   expandable: boolean;
-  selected: boolean;
+  selectedLeaf: boolean;
 }
 
 /**
@@ -49,15 +50,19 @@ class FormlyTreeFlatNode {
  * If a node is a category, it has children items and new items can be added under the category.
  */
 class TreeBuilder {
-  static buildTree(option: FormlyTreeNodeData, data: FormlyTreeNodeData) {
-    return this.buildTreeOfLevel(option, data, null, 0);    
+  static buildTree(option: FormlyTreeNodeData, model: FormlyTreeNodeData): FormlyTreeNode[] {
+    return this.buildTreeOfLevel(option, model, null, 0);    
+  }
+
+  static getModel(option: FormlyTreeNodeData, treeControl: FlatTreeControl<FormlyTreeFlatNode>): FormlyTreeNodeData {
+    return null;
   }
 
   /**
    * Build the tree of the given level. The `value` is the Json object, or a sub-tree of a Json object.
    * The return value is the list of `TreeNode`.
    */
-  private static buildTreeOfLevel(option: FormlyTreeNodeValue, data: FormlyTreeNodeValue, parent: FormlyTreeNode, level: number): FormlyTreeNode[] {
+  private static buildTreeOfLevel(option: FormlyTreeNodeValue, model: FormlyTreeNodeValue, parent: FormlyTreeNode, level: number): FormlyTreeNode[] {
     return Object.keys(option).reduce<FormlyTreeNode[]>((acc, key) => {
       const optionValue = option[key];
       let optionItem = key;
@@ -65,14 +70,14 @@ class TreeBuilder {
         optionItem = optionValue;
       }
 
-      const dataValue = data !== undefined ? data[key] : undefined;
+      const modelValue = model !== undefined ? model[key] : undefined;
       const node = new FormlyTreeNode(optionItem, parent);
       if (optionValue !== null && typeof optionValue === 'object') {
-        node.children = TreeBuilder.buildTreeOfLevel(optionValue, dataValue, node, level + 1);        
+        node.children = TreeBuilder.buildTreeOfLevel(optionValue, modelValue, node, level + 1);        
       }
 
-      if (!node.children && dataValue !== undefined) {
-        node.selected = true;
+      if (!node.children && modelValue !== undefined) {
+        node.selectedLeaf = true;
       }
 
       return acc.concat(node);
@@ -109,14 +114,15 @@ export class FormlyFieldTreeSelect extends FieldType implements OnInit, OnDestro
   /** The selection for checklist */
   treeSelection = new SelectionModel<FormlyTreeFlatNode>(true /* multiple */);
 
-  /** Map from flat node to nested node. This helps us finding the nested node to be modified */
-  private flatNodeMap = new Map<FormlyTreeFlatNode, FormlyTreeNode>();
+  /** Map from path to nested node */
+  private nodeMap = new Map<string, FormlyTreeNode>();
 
-  /** Map from nested node to flattened node. This helps us to keep the same object for selection */
-  private nestedNodeMap = new Map<FormlyTreeNode, FormlyTreeFlatNode>();
+  /** Map from path to flattened node */
+  private flatNodeMap = new Map<string, FormlyTreeFlatNode>();
 
   private treeFlattener: MatTreeFlattener<FormlyTreeNode, FormlyTreeFlatNode>;
 
+  private option = null;
   private optionsSubscription: Subscription = null;
 
   constructor() {
@@ -134,18 +140,18 @@ export class FormlyFieldTreeSelect extends FieldType implements OnInit, OnDestro
     if (this.to.options) {
       if (isObservable(this.to.options)) {
         this.optionsSubscription = this.to.options.subscribe(options => {
-          const option = options && options.length === 1 ? options[0] : null;
-          this.optionTree.data = TreeBuilder.buildTree(option, this.model);
+          this.option = options && options.length === 1 ? options[0] : null;
+          this.optionTree.data = TreeBuilder.buildTree(this.option, this.model);
         });
       } else {
         let options = this.to.options;
-        const option = options && options.length === 1 ? options[0] : null;
-        this.optionTree.data = TreeBuilder.buildTree(option, this.model);
+        this.option = options && options.length === 1 ? options[0] : null;
+        this.optionTree.data = TreeBuilder.buildTree(this.option, this.model);
       }
     }
 
     this.treeControl.dataNodes.forEach(node => {
-      if (node.selected) {
+      if (node.selectedLeaf) {
         this.treeLeafSelectionToggle(node);
       }
     });    
@@ -161,8 +167,8 @@ export class FormlyFieldTreeSelect extends FieldType implements OnInit, OnDestro
   }
   
   /** Whether all the descendants of the node are selected. */
-  descendantsAllSelected(node: FormlyTreeFlatNode): boolean {
-    const descendants = this.treeControl.getDescendants(node);
+  descendantsAllSelected(flatNode: FormlyTreeFlatNode): boolean {
+    const descendants = this.treeControl.getDescendants(flatNode);
     const descAllSelected = descendants.every(child =>
       this.treeSelection.isSelected(child)
     );
@@ -170,70 +176,78 @@ export class FormlyFieldTreeSelect extends FieldType implements OnInit, OnDestro
   }
 
   /** Whether part of the descendants are selected */
-  descendantsPartiallySelected(node: FormlyTreeFlatNode): boolean {
-    const descendants = this.treeControl.getDescendants(node);
+  descendantsPartiallySelected(flatNode: FormlyTreeFlatNode): boolean {
+    const descendants = this.treeControl.getDescendants(flatNode);
     const result = descendants.some(child => this.treeSelection.isSelected(child));
-    return result && !this.descendantsAllSelected(node);
+    return result && !this.descendantsAllSelected(flatNode);
   }
 
   /** Toggle the item selection. Select/deselect all the descendants node */
-  treeNodeSelectionToggle(node: FormlyTreeFlatNode): void {
-    this.treeSelection.toggle(node);
-    const descendants = this.treeControl.getDescendants(node);
-    this.treeSelection.isSelected(node)
+  treeNodeSelectionToggle(flatNode: FormlyTreeFlatNode): void {
+    this.treeSelection.toggle(flatNode);
+
+    // Force update for the children
+    const descendants = this.treeControl.getDescendants(flatNode);
+    this.treeSelection.isSelected(flatNode)
       ? this.treeSelection.select(...descendants)
       : this.treeSelection.deselect(...descendants);
 
     // Force update for the parent
-    this.checkAllParentsSelection(node);
+    this.checkAllParentsSelection(flatNode);
 
     this.updateModel();
   }
 
   /** Toggle a leaf item selection. Check all the parents to see if they changed */
-  treeLeafSelectionToggle(node: FormlyTreeFlatNode): void {
-    this.treeSelection.toggle(node);
-    this.checkAllParentsSelection(node);
+  treeLeafSelectionToggle(flatNode: FormlyTreeFlatNode): void {
+    this.treeSelection.toggle(flatNode);
 
-    node.selected = !node.selected;
+    // Force update for the parent
+    this.checkAllParentsSelection(flatNode);
+
+    // Set the selected flag for leaves
+    flatNode.selectedLeaf = !flatNode.selectedLeaf;
 
     this.updateModel();
   }
 
   /** Update model by all the selection status */
   private updateModel() {
-    // this.formControl.setValue(this.model);
+    //this.model = TreeBuilder.getModel(this.option, this.treeControl);
   }
 
-  hasChild = (_: number, _nodeData: FormlyTreeFlatNode) => _nodeData.expandable;
+  hasChild = (i: number, flatNode: FormlyTreeFlatNode) => flatNode.expandable;
 
-  private getLevel = (node: FormlyTreeFlatNode) => node.level;
+  private getLevel = (flatNode: FormlyTreeFlatNode) => flatNode.level;
 
-  private isExpandable = (node: FormlyTreeFlatNode) => node.expandable;
+  private isExpandable = (flatNode: FormlyTreeFlatNode) => flatNode.expandable;
 
   private getChildren = (node: FormlyTreeNode): FormlyTreeNode[] => node.children;
 
   /**
    * Transformer to convert nested node to flat node. Record the nodes in maps for later use.
    */
-  private transformer = (node: FormlyTreeNode, level: number) => {
-    const existingNode = this.nestedNodeMap.get(node);
-    const flatNode = existingNode && existingNode.item === node.item
-        ? existingNode
+  private transformer = (node: FormlyTreeNode, level: number): FormlyTreeFlatNode => {
+    const path: string = node.path;
+    const existingFlatNode = this.flatNodeMap.get(path);
+    const flatNode = existingFlatNode && existingFlatNode.path === path
+        ? existingFlatNode
         : new FormlyTreeFlatNode();
     flatNode.item = node.item;
+    flatNode.path = path;
     flatNode.level = level;
     flatNode.expandable = !!node.children;
-    flatNode.selected = node.selected;
-    this.flatNodeMap.set(flatNode, node);
-    this.nestedNodeMap.set(node, flatNode);
+    flatNode.selectedLeaf = node.selectedLeaf;
+    
+    this.nodeMap.set(path, node);
+    this.flatNodeMap.set(path, flatNode);
 
     return flatNode;
   }
 
   /* Checks all the parents when a leaf node is selected/unselected */
-  private checkAllParentsSelection(node: FormlyTreeFlatNode): void {
-    let parent: FormlyTreeFlatNode | null = this.getParentNode(node);
+  private checkAllParentsSelection(flatNode: FormlyTreeFlatNode): void {
+    let parent: FormlyTreeFlatNode | null = this.getParentNode(flatNode);
     while (parent) {
       this.checkRootNodeSelection(parent);
       parent = this.getParentNode(parent);
@@ -241,36 +255,28 @@ export class FormlyFieldTreeSelect extends FieldType implements OnInit, OnDestro
   }
 
   /** Check root node checked state and change it accordingly */
-  private checkRootNodeSelection(node: FormlyTreeFlatNode): void {
-    const nodeSelected = this.treeSelection.isSelected(node);
-    const descendants = this.treeControl.getDescendants(node);
+  private checkRootNodeSelection(flatNode: FormlyTreeFlatNode): void {
+    const nodeSelected = this.treeSelection.isSelected(flatNode);
+    const descendants = this.treeControl.getDescendants(flatNode);
     const descAllSelected = descendants.every(child =>
       this.treeSelection.isSelected(child)
     );
     if (nodeSelected && !descAllSelected) {
-      this.treeSelection.deselect(node);
+      this.treeSelection.deselect(flatNode);
     } else if (!nodeSelected && descAllSelected) {
-      this.treeSelection.select(node);
+      this.treeSelection.select(flatNode);
     }
   }
 
   /* Get the parent node of a node */
-  private getParentNode(node: FormlyTreeFlatNode): FormlyTreeFlatNode | null {
-    const currentLevel = this.getLevel(node);
-
-    if (currentLevel < 1) {
+  private getParentNode(flatNode: FormlyTreeFlatNode): FormlyTreeFlatNode | null {
+    const node: FormlyTreeNode = this.nodeMap.get(flatNode.path);
+    const parentNode = node.parent;
+    if (parentNode) {
+      const parentFlatNode = this.flatNodeMap.get(parentNode.path);
+      return parentFlatNode;
+    } else {
       return null;
-    }
-
-    const startIndex = this.treeControl.dataNodes.indexOf(node) - 1;
-
-    for (let i = startIndex; i >= 0; i--) {
-      const currentNode = this.treeControl.dataNodes[i];
-
-      if (this.getLevel(currentNode) < currentLevel) {
-        return currentNode;
-      }
-    }
-    return null;
+    }    
   }
 }

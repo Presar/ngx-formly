@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormlyModule } from '@ngx-formly/core';
 
-import { FormlyMatNativeSelectModule } from '@ngx-formly/material/native-select';
-
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -15,9 +13,7 @@ import { AppComponent } from './app.component';
       validationMessages: [
         { name: 'required', message: 'This field is required' },
       ],
-    }),
-
-    FormlyMatNativeSelectModule,
+    })
   ],
   declarations: [
     AppComponent,

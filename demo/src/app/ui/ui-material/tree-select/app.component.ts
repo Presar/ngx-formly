@@ -14,6 +14,7 @@ export class AppComponent {
   }
 
   form = new FormGroup({});
+  // model is the nodes selected till the leaves
   model: FormlyTreeNodeData = {
     Groceries: {
       'Almond Meal flour': null,
