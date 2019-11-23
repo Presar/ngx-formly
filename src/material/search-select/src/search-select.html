@@ -28,12 +28,9 @@
     (optionSelected)="selected($event)"
     (closed)="clear()"
 >
-    <mat-option *ngIf="to.crud && to.crud.create" [value]="">
-        <mat-icon>add_circle_outline</mat-icon>Add New
-    </mat-option>
     <mat-option
         *ngFor="let option of options$ | async"
-        [value]="option"
+        [value]="to.getValue(option)"
     >
         {{ to.getText(option) }}
     </mat-option>

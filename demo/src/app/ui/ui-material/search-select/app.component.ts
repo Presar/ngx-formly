@@ -54,22 +54,11 @@ export class AppComponent {
           startWith: true,                      // match the options which start with the input
           showAllForBlankInput: true            // show all options when input value is blank
         },
-        crud: {
-          detail: false,      // whether or not show detail when selecting option
-          create: false,      // whether or not show "Add New" option
-          update: false,      // show edit button in the detail
-          fieldGroup: [],     // sub form
-          save: (model: any) => {}
-        },
+
         getValue: (option: User) => option.key,
         getText: (option: User) => 
           option ? (option.name ? option.name + " (" + option.email + ")" : option.email || '') : ''
       },
     },
   ];
-
-  getModel() {
-    return JSON.stringify(this.model);
-  }
- 
 }

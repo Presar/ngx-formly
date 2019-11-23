@@ -21,19 +21,13 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
       placeholder: 'Input to get matched options',
       options: of([]),
       filter: {
+        trim: true,                       // trim the input
         caseSensitive: false,
         startWith: true,                  // match the options which start with the input
         showAllForBlankInput: true        // show all options when input value is blank
       },
       getValue: (option: any) => option,  // the function to get the value to save to the form
-      getText: (option: any) => option,   // the function to get text to show as option text
-      crud: {
-        detail: false,      // whether or not show detail when selecting option
-        create: false,      // whether or not show "Add New" option
-        update: false,      // show edit button in the detail
-        fieldGroup: [],     // sub form
-        save: (model: any) => {}
-      }
+      getText: (option: any) => option    // the function to get text to show as option text
     },
   };
    
