@@ -1,15 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatInputModule } from '@angular/material/input';
-import { MatTreeModule } from '@angular/material/tree';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlySelectModule } from '@ngx-formly/core/select';
 import { FormlyMatFormFieldModule } from '@ngx-formly/material/form-field';
 import { FormlyFieldSearchSelect } from './search-select.type';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 
 @NgModule({
   declarations: [FormlyFieldSearchSelect],
@@ -17,10 +16,9 @@ import { MatButtonModule } from '@angular/material/button';
     CommonModule,
     ReactiveFormsModule,
     MatInputModule,
-    MatCheckboxModule,
+    MatAutocompleteModule,
     MatIconModule,
-    MatTreeModule,
-    MatButtonModule,
+    MatChipsModule,
 
     FormlyMatFormFieldModule,
     FormlySelectModule,

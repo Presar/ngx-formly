@@ -1,29 +1,40 @@
-<input matInput
-    autocomplete="off"
-    [id]="id"
-    [readonly]="to.readonly"
-    [errorStateMatcher]="errorStateMatcher"
-    [formControl]="formControl"
-    [formlyAttributes]="field"
-    [tabindex]="to.tabindex || 0"
-    [placeholder]="to.placeholder"    
-    [matAutocomplete]="searchSelectAutoComplete"
-    (input)="editSearchSelectFormFlag = false"
-    (blur)="blurSearchSelect($event)"
-/>
-<mat-autocomplete
-    #searchSelectAutoComplete="matAutocomplete"
-    [displayWith]="displaySearchSelectValue($event)"
-    (optionSelected)="searchSelected($event)"
+<mat-chip-list #optionsList
+    [multiple]="false"    
 >
-    <mat-option
-        *ngFor="let option of foundOptions | async"
-        [value]="option.value"
-    >
-        {{ option.label }}
+    <mat-chip
+        [ngClass]="{'hide': selectedOption === null}"
+        [removable]="true"
+        (removed)="remove()">
+        {{ selectedOption || '' }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>    
+    <input matInput #optionInput
+        [ngClass]="{'hide': selectedOption !== null}"
+        autocomplete="off"
+        [formControl]="formControl"
+        [id]="id"
+        [formlyAttributes]="field"
+        [readonly]="to.readonly"
+        [tabindex]="to.tabindex || 0"
+        [placeholder]="to.placeholder"
+        [errorStateMatcher]="errorStateMatcher"
+        [matAutocomplete]="autocomplete"
+        [matChipInputFor]="optionsList"
+    />
+</mat-chip-list>
+<mat-autocomplete
+    #autocomplete="matAutocomplete"
+    [displayWith]="displayWith"
+    (optionSelected)="selected($event)"
+    (closed)="clear()"
+>
+    <mat-option *ngIf="to.crud && to.crud.create" [value]="">
+        <mat-icon>add_circle_outline</mat-icon>Add New
     </mat-option>
-    <mat-option [value]=""><mat-icon>add_circle_outline</mat-icon>Add New</mat-option>
+    <mat-option
+        *ngFor="let option of options$ | async"
+        [value]="option"
+    >
+        {{ to.getText(option) }}
+    </mat-option>
 </mat-autocomplete>
-<div [id]="id + '-form'" *ngIf="editSearchSelectFormFlag === true">
-
-</div>
