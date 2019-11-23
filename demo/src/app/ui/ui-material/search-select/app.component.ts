@@ -23,20 +23,20 @@ export class AppComponent {
       key: 1,
       email: 'tester1@test.com',
       name: 'Tester1 User',
-      company: 'company1'
+      company: 'company1',
     },
     {
       key: 2,
       email: 'tester2@test.com',
       name: 'Tester2 User',
-      company: 'company1'
+      company: 'company1',
     },
     {
       key: 3,
       email: 'some3@test.com',
       name: 'Some Tester3',
-      company: 'company2'
-    }
+      company: 'company2',
+    },
   ];
   fields: FormlyFieldConfig[] = [
     {
@@ -49,15 +49,18 @@ export class AppComponent {
         required: true,
         options: of(this.users),
         filter: {
-          fields: ['email', 'name', 'company'], // fields to match the input
+          // fields to match the input
+          fields: ['email', 'name', 'company'],
           caseSensitive: false,
-          startWith: true,                      // match the options which start with the input
-          showAllForBlankInput: true            // show all options when input value is blank
+          // match the options which start with the input
+          startWith: true,
+          // show all options when input value is blank
+          showAllForBlankInput: true,
         },
 
         getValue: (option: User) => option.key,
-        getText: (option: User) => 
-          option ? (option.name ? option.name + " (" + option.email + ")" : option.email || '') : ''
+        getText: (option: User) =>
+          option ? (option.name ? option.name + ' (' + option.email + ')' : option.email || '') : '',
       },
     },
   ];

@@ -1,36 +1,39 @@
-import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
-import { MatAutocomplete, MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { MatAutocomplete, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { FieldType } from '@ngx-formly/material';
-import { isObservable, Observable, of } from "rxjs";
-import { map, startWith, switchMap } from "rxjs/operators";
+import { isObservable, Observable, of } from 'rxjs';
+import { map, startWith, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'formly-field-mat-search-select',
   templateUrl: 'search-select.html',
-  styleUrls: ['search-select.scss']
+  styleUrls: [ 'search-select.scss' ]
 })
 export class FormlyFieldSearchSelect extends FieldType implements OnInit {
-  @ViewChild('optionInput') optionInput: ElementRef<HTMLInputElement>;
-  @ViewChild('autocomplete') autocomplete: MatAutocomplete;
+  @ViewChild('optionInput') optionInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('autocomplete') autocomplete!: MatAutocomplete;
 
-  options$: Observable<any>;
-  selectedOption: string = null;
+  options$: Observable<any> = of([]);
+  selectedOption: string | null = null;
 
   defaultOptions = {
     templateOptions: {
       placeholder: 'Input to get matched options',
       options: of([]),
       filter: {
-        trim: true,                       // trim the input
         caseSensitive: false,
-        startWith: true,                  // match the options which start with the input
-        showAllForBlankInput: true        // show all options when input value is blank
+        // match the options which start with the input
+        startWith: true,
+        // show all options when input value is blank
+        showAllForBlankInput: true,
       },
-      getValue: (option: any) => option,  // the function to get the value to save to the form
-      getText: (option: any) => option    // the function to get text to show as option text
+      // the function to get the value to save to the form
+      getValue: (option: any) => option,
+      // the function to get text to show as option text
+      getText: (option: any) => option,
     },
   };
-   
+
   get type() {
     return this.to.type || 'search-select';
   }
@@ -41,9 +44,33 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
     this.options$ = this.formControl.valueChanges
       .pipe(
         startWith(''),
-        switchMap(value => 
+        switchMap(value =>
           this.filterOptions(value)),
       );
+  }
+
+  displayWith = (option: any) => {
+    return option ? this.to.getText(option) : '';
+  }
+
+  clear(): void {
+    this.optionInput.nativeElement.value = '';
+
+    if (this.selectedOption === null) {
+      this.formControl.setValue(null);
+    }
+  }
+
+  remove(): void {
+    this.selectedOption = null;
+    this.formControl.setValue(null);
+    this.optionInput.nativeElement.value = '';
+    this.optionInput.nativeElement.focus();
+  }
+
+  selected(event: MatAutocompleteSelectedEvent): void {
+    this.selectedOption = event.option.viewValue;
+    this.optionInput.nativeElement.value = '';
   }
 
   private matchString = (fieldValueString: string, inputString: string): boolean => {
@@ -53,7 +80,7 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
     }
     const index = fieldValueString.indexOf(inputString);
     return this.to.filter.startWith ? index === 0 : index >= 0;
-  };
+  }
 
   private matchOption = (option: any, input: any): boolean => {
     if (typeof input !== 'string') {
@@ -72,7 +99,7 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
       }
     }
     return false;
-  };
+  }
 
   private filterOptions(input: any): Observable<any[]> {
     if (input === undefined || input === null || input === '') {
@@ -81,34 +108,12 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
 
     if (this.to.options &&　isObservable(this.to.options)) {
       return this.to.options.pipe(
-        map(options => 
-          options ? options.filter(option => this.matchOption(option, input)) : [])
+        map(options =>
+          options ? options.filter(option => this.matchOption(option, input)) : []),
       );
-    } else {
-      return of(this.to.options ? (this.to.options as any[]).filter(option => this.matchOption(option, input)) : []);
-    }    
-  };
-
-  displayWith = (option: any) => {
-    return option ? this.to.getText(option) : '';
-  };
-
-  clear(): void {
-    this.optionInput.nativeElement.value = '';
-    if (this.selectedOption === null) {
-      this.formControl.setValue(null);
     }
-  }
-
-  remove(): void {
-    this.selectedOption = null;
-    this.formControl.setValue(null);
-    this.optionInput.nativeElement.value = '';
-    this.optionInput.nativeElement.focus();
-  }
-
-  selected(event: MatAutocompleteSelectedEvent): void {
-    this.selectedOption = event.option.viewValue;
-    this.optionInput.nativeElement.value = '';
+    else {
+      return of(this.to.options ? (this.to.options as any[]).filter(option => this.matchOption(option, input)) : []);
+    }
   }
 }
