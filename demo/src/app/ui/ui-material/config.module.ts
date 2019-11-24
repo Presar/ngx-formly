@@ -1,19 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ExamplesRouterViewerComponent } from '../../shared';
-import { CommonModule, CommonExampleConfigs, CommonExampleComponents, debugFields } from '../common';
-import { DatepickerAppModule, DatepickerExampleConfig, DatepickerAppComponent } from './datepicker';
-import { NativeSelectAppModule, NativeSelectExampleConfig, NativeSelectAppComponent } from './native-select';
-import { ToggleAppModule, ToggleExampleConfig, ToggleAppComponent } from './toggle';
-import { SliderAppModule, SliderExampleConfig, SliderAppComponent } from './slider';
-import { AutocompleteAppModule, AutocompleteExampleConfig, AutocompleteAppComponent } from './autocomplete';
 import { FormlyMaterialModule } from '@ngx-formly/material';
+import { ExamplesRouterViewerComponent } from '../../shared';
+import { CommonExampleComponents, CommonExampleConfigs, CommonModule, debugFields } from '../common';
+import { AutocompleteAppComponent, AutocompleteAppModule, AutocompleteExampleConfig } from './autocomplete';
+import { DatepickerAppComponent, DatepickerAppModule, DatepickerExampleConfig } from './datepicker';
+import { NativeSelectAppComponent, NativeSelectAppModule, NativeSelectExampleConfig } from './native-select';
+import { SearchSelectAppComponent, SearchSelectAppModule, SearchSelectExampleConfig } from './search-select';
+import { SliderAppComponent, SliderAppModule, SliderExampleConfig } from './slider';
+import { ToggleAppComponent, ToggleAppModule, ToggleExampleConfig } from './toggle';
 
 @NgModule({
   imports: [
     CommonModule,
     FormlyMaterialModule,
     NativeSelectAppModule,
+    SearchSelectAppModule,
     DatepickerAppModule,
     ToggleAppModule,
     SliderAppModule,
@@ -27,6 +29,7 @@ import { FormlyMaterialModule } from '@ngx-formly/material';
           examples: [
             ...CommonExampleConfigs,
             NativeSelectExampleConfig,
+            SearchSelectExampleConfig,
             DatepickerExampleConfig,
             ToggleExampleConfig,
             SliderExampleConfig,
@@ -40,6 +43,7 @@ import { FormlyMaterialModule } from '@ngx-formly/material';
     ...CommonExampleComponents,
 
     NativeSelectAppComponent,
+    SearchSelectAppComponent,
     DatepickerAppComponent,
     ToggleAppComponent,
     SliderAppComponent,
