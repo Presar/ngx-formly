@@ -59,7 +59,7 @@ export class AppComponent {
         },
 
         getValue: (option: User) => option.key,
-        getText: (option: User) =>
+        getLabel: (option: User) =>
           option ? (option.name ? option.name + ' (' + option.email + ')' : option.email || '') : '',
       },
     },

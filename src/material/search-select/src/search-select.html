@@ -26,12 +26,12 @@
     #autocomplete="matAutocomplete"
     [displayWith]="displayWith"
     (optionSelected)="selected($event)"
-    (closed)="clear()"
+    (closed)="cleanInput()"
 >
     <mat-option
         *ngFor="let option of options$ | async"
         [value]="to.getValue(option)"
     >
-        {{ to.getText(option) }}
+        {{ to.getLabel(option) }}
     </mat-option>
 </mat-autocomplete>

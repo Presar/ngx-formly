@@ -7,7 +7,12 @@ import { map, startWith, switchMap } from 'rxjs/operators';
 @Component({
   selector: 'formly-field-mat-search-select',
   templateUrl: 'search-select.html',
-  styleUrls: [ 'search-select.scss' ]
+  styles: [`.hide {
+    visibility: hidden;
+    width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+  }`],
 })
 export class FormlyFieldSearchSelect extends FieldType implements OnInit {
   @ViewChild('optionInput') optionInput!: ElementRef<HTMLInputElement>;
@@ -29,8 +34,8 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
       },
       // the function to get the value to save to the form
       getValue: (option: any) => option,
-      // the function to get text to show as option text
-      getText: (option: any) => option,
+      // the function to get the label to show as option text
+      getLabel: (option: any) => option,
     },
   };
 
@@ -47,13 +52,14 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
         switchMap(value =>
           this.filterOptions(value)),
       );
+    this.initialiseSelectOption();
   }
 
   displayWith = (option: any) => {
-    return option ? this.to.getText(option) : '';
+    return option ? this.to.getLabel(option) : '';
   }
 
-  clear(): void {
+  cleanInput(): void {
     this.optionInput.nativeElement.value = '';
 
     if (this.selectedOption === null) {
@@ -69,7 +75,18 @@ export class FormlyFieldSearchSelect extends FieldType implements OnInit {
   }
 
   selected(event: MatAutocompleteSelectedEvent): void {
-    this.selectedOption = event.option.viewValue;
+    this.selectOption(event.option.viewValue);
+  }
+
+  private initialiseSelectOption() {
+    if (this.model && this.field && this.field.key
+      && (this.model[this.field.key] !== null && this.model[this.field.key] !== undefined)) {
+      this.selectOption(this.to.getLabel(this.model[this.field.key]));
+    }
+  }
+
+  private selectOption(optionText: string) {
+    this.selectedOption = optionText;
     this.optionInput.nativeElement.value = '';
   }
 
