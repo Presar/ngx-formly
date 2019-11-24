@@ -112,7 +112,7 @@ describe('ui-material: FormlyFieldSearchSelect Component', () => {
           email: 'tester2@test.com',
           name: 'Tester2 User',
           company: 'company1',
-        }
+        },
       };
       const fixture = createTestComponent('<formly-form [form]="form" [fields]="fields" [model]="model" [options]="options"></formly-form>');
 
@@ -166,4 +166,4 @@ class TestComponent {
   form: FormGroup = testComponentInputs.form;
   model = testComponentInputs.model || {};
   options = testComponentInputs.options;
-};
+}
